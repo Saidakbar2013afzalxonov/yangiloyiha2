@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import LoginSerializer, RefreshSerializer
 
 from .models import CustomUser
 from .serializers import RegisterSerializer, LoginSerializer
@@ -12,20 +13,20 @@ class RegisterAPIView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
 
-class LoginAPIView(generics.GenericAPIView):
-    serializer_class = LoginSerializer
+# class LoginAPIView(generics.GenericAPIView):
+#     serializer_class = LoginSerializer
 
-    def post(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+#     def post(self, request):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
 
-        user = serializer.validated_data["user"]
-        refresh = RefreshToken.for_user(user)
+#         user = serializer.validated_data["user"]
+#         refresh = RefreshToken.for_user(user)
 
-        return Response({
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        })
+#         return Response({
+#             "refresh": str(refresh),
+#             "access": str(refresh.access_token),
+#         })
 
 
 class ProfileAPIView(APIView):
@@ -61,3 +62,16 @@ class LogoutAPIView(generics.GenericAPIView):
                 {"error": "Invalid refresh token."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+class LoginAPIView(APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data = request.data)
+        serializer.is_valid(raise_exception = True)
+        return Response(serializer.validated_data, status = status.HTTP_200_OK)
+
+
+class RefreshAPIView(APIView):
+    def post(self, request):
+        serializer = RefreshSerializer(data = request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.validated_data)
